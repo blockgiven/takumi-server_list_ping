@@ -14,10 +14,18 @@ module Takumi
       status_request = Takumi::ServerListPing::StatusRequest.create
 
       socket = TCPSocket.open(handshake.server_address, handshake.port)
+      socket.setsockopt(Socket::IPPROTO_TCP, Socket::TCP_NODELAY, 1)
       socket.write(handshake.to_s)
       socket.write(status_request.to_s)
+      socket.flush
 
-      Takumi::ServerListPing::StatusResponse.decode(socket.read)
+      packets = "".encode(Encoding::BINARY)
+      loop do
+        buf = socket.recv(1024)
+        break if buf.empty?
+        packets << buf
+      end
+      Takumi::ServerListPing::StatusResponse.decode(packets)
     ensure
       socket.close if socket
     end
