@@ -1,0 +1,23 @@
+#!/usr/bin/env ruby
+lib = File.expand_path('../lib', __dir__)
+$LOAD_PATH.unshift(lib) unless $LOAD_PATH.include?(lib)
+
+require "takumi/server_list_ping"
+
+if ARGV[0]
+  server_address, port = ARGV[0].split(':')
+end
+
+handshake = Takumi::ServerListPing::Handshake.create({
+  server_address: server_address      || 'localhost',
+  port:           (port && port.to_i) || ::Takumi::ServerListPing::PORT
+})
+status_request = Takumi::ServerListPing::StatusRequest.create
+
+socket = TCPSocket.open(handshake.server_address, handshake.port)
+socket.write(handshake.to_s)
+socket.write(status_request.to_s)
+
+packets = socket.read
+status_response = Takumi::ServerListPing::StatusResponse.decode(packets)
+puts status_response.json
