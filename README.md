@@ -22,8 +22,14 @@ Or install it yourself as:
 
 ## Usage
 
+### Command
+
     $ bundle exec takumi-server_list_ping YOUR_SERVER_IP_ADDRESS_OR_HOSTNAME
     {"description":"A Minecraft Server","players":{"max":20,"online":0},"version":{"name":"1.8","protocol":47}}
+
+### Get server list ping
+
+    Takumi::ServerListPing.ping(MINECRAFT_SERVER_ADDRESS, PORT)
 
 ## Contributing
 
