@@ -1,4 +1,5 @@
 require 'socket'
+require 'timeout'
 
 module Takumi
   module ServerListPing
@@ -8,7 +9,7 @@ module Takumi
 
     module_function
 
-    def ping(server_address = 'localhost', port = PORT)
+    def ping(server_address = 'localhost', port = PORT, timeout: 60)
       handshake = Takumi::ServerListPing::Handshake.create({
         server_address: server_address,
         port:           port
@@ -22,10 +23,17 @@ module Takumi
       socket.flush
 
       packets = "".encode(Encoding::BINARY)
-      loop do
-        buf = socket.recv(1024)
-        break if buf.empty?
-        packets << buf
+
+      begin
+        Timeout.timeout(timeout) do
+          loop do
+            buf = socket.recv(1024)
+            break if buf.empty? or socket.closed?
+            packets << buf
+          end
+        end
+      rescue Timeout::Error
+        # ok
       end
       Takumi::ServerListPing::StatusResponse.decode(packets)
     ensure
