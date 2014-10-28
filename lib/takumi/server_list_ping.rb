@@ -1,3 +1,5 @@
+require 'socket'
+
 module Takumi
   module ServerListPing
     NEXT_STATUS      = 1
